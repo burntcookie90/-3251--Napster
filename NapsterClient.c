@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include "Practical.h"
 
-#define DEBUG 1
+#define DEBUG 0
 #define WAITFORINPUT 0
 #define PROMPT_STATE 1
 #define QUITSTATE 2
