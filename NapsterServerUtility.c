@@ -89,7 +89,7 @@ void HandleTCPClient(int clntSocket) {
 
   if(DEBUG) printf("Line in %s: %d\n",filename,file_line);
   if(DEBUG) printf("Previous file line: %s\n",list[file_line-1].filename);
-  list[file_line].filename = buffer;
+  strcpy(list[file_line].filename,buffer);
   if(DEBUG) printf("Loaded filename %s into array\n",list[file_line].filename);
 
   FILE *fp;
