@@ -97,7 +97,8 @@ int main(int argc, char *argv[]) {
 		else
 			puts("Unable to get client address");
 
-		HandleTCPClient(clntSock);
+		printf("[NapsterServer] Handling tcp client\n");
+		HandleTCPClient(clntSock, clntName);
 	}
 	// NOT REACHED
 }

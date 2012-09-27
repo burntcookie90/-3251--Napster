@@ -25,4 +25,4 @@ TCPEchoClient4.o : TCPEchoClient4.c Practical.h
 AddressUtility.o : AddressUtility.c
 	$(cc) $(CFLAGS) AddressUtility.c
 clean : 
-	NapsterServer NapsterClient 
+	rm NapsterServer NapsterClient 

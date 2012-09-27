@@ -73,7 +73,7 @@ int main(int argc, char* argv[]){
 	fputc('\n', stdout); 	//Print a final linefeed
 
 	//Begin the shell!
-	printf("Welcome to Retspan!\n");
+	printf("Welcome to Retspan!\nRevision 13.2:Missouri\n");
 	while(1){
 		char *command;
 		char input[256];
@@ -116,9 +116,10 @@ int main(int argc, char* argv[]){
 				}
 				else{
 					filename_in = malloc(255*sizeof(char));
-					//					filename_in = arg;
+					//filename_in = arg;
 					arg[strlen(arg)-1] = 0;
-					strcpy(filename_in,arg);
+					strcat(filename_in,"1");
+					strcat(filename_in,arg);
 					printf("ADDING %s BREH\n",filename_in);
 					size_t filenameLen = strlen(filename_in); 	//Determine input length
 
@@ -131,7 +132,7 @@ int main(int argc, char* argv[]){
 					else if (numBytes != filenameLen) {
 						DieWithUserMessage("send()", "sent unexpected number of bytes");
 					}
-					//Receive the same string back from the server
+//					//Receive the same string back from the server
 					unsigned int totalBytesRcvd = 0; //Count o total bytes received
 					fputs("Received file: ",stdout); 	//Setup to print the echoed string
 
