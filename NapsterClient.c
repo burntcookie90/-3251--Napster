@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include "Practical.h"
 
-#define DEBUG 0
+#define DEBUG 1
 #define WAITFORINPUT 0
 #define PROMPT_STATE 1
 #define QUITSTATE 2
@@ -104,6 +104,9 @@ int main(int argc, char* argv[]){
 			else if(strncmp(command, "addfile",7)==0){ //check if user wants to add a file
 				state = ADDSTATE;
 			}
+			else if(strncmp(command,"listfiles",9)==0){ 	//check for list files
+				state = LISTFILESTATE;
+			}
 		}
 		else if(state == QUITSTATE){ //execute quit code
 			close(sock);
@@ -132,7 +135,7 @@ int main(int argc, char* argv[]){
 					else if (numBytes != filenameLen) {
 						DieWithUserMessage("send()", "sent unexpected number of bytes");
 					}
-//					//Receive the same string back from the server
+					//					//Receive the same string back from the server
 					unsigned int totalBytesRcvd = 0; //Count o total bytes received
 					fputs("Received file: ",stdout); 	//Setup to print the echoed string
 
@@ -154,6 +157,34 @@ int main(int argc, char* argv[]){
 					state=PROMPT_STATE;
 				}
 			}
+		}
+		else if (state == LISTFILESTATE){
+			char* serv_state = malloc(sizeof(char*));
+			serv_state = "2";
+			printf("[NapsterClient]Listing files!\n");
+			int state_len = strlen(serv_state); 	//Determine input length
+			if(DEBUG) printf("[NapsterClient] %s\n",serv_state);
+
+			//	Send the string to the server
+			ssize_t numBytes = send(sock, serv_state, state_len,0);
+
+			if (numBytes < 0) {
+				DieWithSystemMessage("send() failed");
+			}
+			else if (numBytes != state_len) {
+				DieWithUserMessage("send()", "sent unexpected number of bytes");
+			}
+
+			//receive size of list from server
+
+			char list_size[BUFSIZE];
+			if(DEBUG) printf("[NapsterClient] receiving file list size\n");
+			ssize_t numBytesList = recv(sock,list_size,BUFSIZE,0);
+			if(DEBUG) printf("[NapsterClient] Received size: %s\n",list_size);
+
+			if (numBytesList < 0)
+				DieWithSystemMessage("recv() failed");
+			state = PROMPT_STATE;
 		}
 	}
 	close(sock);

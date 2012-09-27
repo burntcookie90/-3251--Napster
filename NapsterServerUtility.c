@@ -79,11 +79,14 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 	if(DEBUG) printf("[NapsterServerUtility] Handling TCP Client %s\n",clientIP);
 	// Receive message from client
 	ssize_t numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
+	buffer[numBytesRcvd] = '\0';
+
 	if (numBytesRcvd < 0)
 		DieWithSystemMessage("recv() failed");
 	if(DEBUG) printf("[NapsterServerUtility] Received: %s\n",buffer);
 
 	char* addState = "1";
+	char* listState = "2";
 
 
 	//ADDSTATE
@@ -127,7 +130,26 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 			if (numBytesRcvd < 0)
 				DieWithSystemMessage("recv() failed");
 		}
-		printf("[NapsterServerUtility] Leaving HandleTCPClient()\n");
+		else if(strncmp(listState,buffer,1)==0){
+			if(DEBUG) printf("[NapsterServerUtility] Listing files!\n");
+			char length[BUFSIZE];
+			int list_size = sizeof(list);
+			sprintf(length,"%d",list_size);
+			if(DEBUG) printf("[NapsterServerUtility]%d %s\n",list_size,length);
+			ssize_t numBytesSent = send(clntSocket,length,strlen(length),0);
+			if (numBytesSent < 0)
+				DieWithSystemMessage("send() failed");
+			else if (numBytesSent != numBytesRcvd)
+				DieWithUserMessage("send()", "sent unexpected number of bytes");
+
+			FILE* fp;
+			if((fp=fopen(filename,"r"))){
+				fclose(fp);
+			}
+			else
+				DieWithSystemMessage("[NapsterServerUtility] file cannot be opened for listing files");
+		}
+//		printf("[NapsterServerUtility] Leaving HandleTCPClient()\n");
 	}
 
 	//  close(clntSocket); // Close client socket
