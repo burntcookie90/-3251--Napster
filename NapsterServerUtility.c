@@ -80,21 +80,18 @@ void HandleTCPClient(int clntSocket) {
   ssize_t numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
   if (numBytesRcvd < 0)
     DieWithSystemMessage("recv() failed");
-  if(DEBUG) printf("Received: %s\n",buffer);
   buffer[strlen(buffer)] =0;
-//  FILE *fp;
-//  fp = fopen(filename,"a+");
-//  fprintf(fp,"127.0.0.1 %s\n",buffer);
-//  fclose(fp);
+  if(DEBUG) printf("Received: %s\n",buffer);
 
   if(DEBUG) printf("Line in %s: %d\n",filename,file_line);
   if(DEBUG) printf("Previous file line: %s\n",list[file_line-1].filename);
-  strcpy(list[file_line].filename,buffer);
+  list[file_line].filename = buffer;	//copy the buffer into the struct
   if(DEBUG) printf("Loaded filename %s into array\n",list[file_line].filename);
 
+  //write the data to the file
   FILE *fp;
   if((fp = fopen(filename,"a+"))){
-	  fprintf(fp,"127.0.0.1 %s",list[file_line].filename);
+	  fprintf(fp,"127.0.0.1 %s\n",list[file_line].filename);
 	  file_line++;
 	  fclose(fp);
   }

@@ -70,25 +70,6 @@ int main(int argc, char* argv[]){
 	//			DieWithUserMessage("send()", "sent unexpected number of bytes");
 	//		}
 
-	//Receive the same string back from the server
-	//		unsigned int totalBytesRcvd = 0; //Count o total bytes received
-	//		fputs("Received: ",stdout); 	//Setup to print the echoed string
-	//
-	//		while(totalBytesRcvd < echoStringLen){
-	//				char buffer[BUFSIZE]; 	//I/0 Buffer
-	//				/*Receive up to the buffer size ( minus 1 to leave space for a null terminator ) bytes from the sender*/
-	//				numBytes = recv(sock, buffer, BUFSIZE -1, 0);
-	//				if (numBytes < 0) {
-	//					DieWithSystemMessage("recv() failed");
-	//				}
-	//				else if (numBytes == 0) {
-	//					DieWithUserMessage("recv()", "connection closed prematurely");
-	//				}
-	//
-	//				totalBytesRcvd += numBytes; //Keep tally of total bytes
-	//				buffer[numBytes]= '\0'; 	//Terminate the string!
-	//				fputs(buffer,stdout); 	//Print the echo buffer
-	//		}
 	fputc('\n', stdout); 	//Print a final linefeed
 
 	//Begin the shell!
@@ -138,7 +119,7 @@ int main(int argc, char* argv[]){
 					//					filename_in = arg;
 					arg[strlen(arg)-1] = 0;
 					strcpy(filename_in,arg);
-					printf("ADDING %s BREH",filename_in);
+					printf("ADDING %s BREH\n",filename_in);
 					size_t filenameLen = strlen(filename_in); 	//Determine input length
 
 					//	Send the string to the server
@@ -149,6 +130,25 @@ int main(int argc, char* argv[]){
 					}
 					else if (numBytes != filenameLen) {
 						DieWithUserMessage("send()", "sent unexpected number of bytes");
+					}
+					//Receive the same string back from the server
+					unsigned int totalBytesRcvd = 0; //Count o total bytes received
+					fputs("Received file: ",stdout); 	//Setup to print the echoed string
+
+					while(totalBytesRcvd < filenameLen){
+						char buffer[BUFSIZE]; 	//I/0 Buffer
+						/*Receive up to the buffer size ( minus 1 to leave space for a null terminator ) bytes from the sender*/
+						numBytes = recv(sock, buffer, BUFSIZE -1, 0);
+						if (numBytes < 0) {
+							DieWithSystemMessage("recv() failed");
+						}
+						else if (numBytes == 0) {
+							DieWithUserMessage("recv()", "connection closed prematurely");
+						}
+
+						totalBytesRcvd += numBytes; //Keep tally of total bytes
+						buffer[numBytes]= '\0'; 	//Terminate the string!
+						fputs(buffer,stdout); 	//Print the echo buffer
 					}
 					state=PROMPT_STATE;
 				}

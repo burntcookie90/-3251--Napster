@@ -101,6 +101,3 @@ int main(int argc, char *argv[]) {
 	}
 	// NOT REACHED
 }
-int addFile(char* ip_address, char* input_filename){
-	return 0;
-}

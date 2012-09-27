@@ -26,8 +26,6 @@ int AcceptTCPConnection(int servSock);
 void HandleTCPClient(int clntSocket);
 // Create and connect a new TCP client socket
 int SetupTCPClientSocket(const char *server, const char *service);
-//add a file to the array and save it to the file
-int addFile(char* ip_address, char* input_filename);
 
 enum sizeConstants {
   MAXSTRINGLENGTH = 128,
