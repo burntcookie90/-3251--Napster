@@ -1,4 +1,0 @@
-127.0.0.1 lol
-138.0.0.1 notlolbuckets
-127.0.0.1 lol.txt
-127.0.0.1 lol.txt
