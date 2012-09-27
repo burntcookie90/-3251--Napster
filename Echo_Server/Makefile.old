@@ -1,0 +1,22 @@
+SERVER 	= Practical.h TCPEchoServer4.c TCPServerUtility.c
+CLIENT 	= DieWithMessage.c TCPEchoClient4.c
+LIBRARY = Practical.h
+
+CC 		= gcc
+OPTIONS = -O2 -I$(SERVER) -I$(CLIENT)
+CFLAGS  = $(OPTIONS) -Wall -ansi -pedantic -pipe -Werror
+
+SERVER_OBJS = TCPServerUtility.o \
+			  TCPEchoServer4.o \
+			  DieWithMessage.o
+
+CLIENT_OBJS = TCPEchoClient4.o 
+
+ALL_OBJS = $(SERVER_OBJS)\
+			$(CLIENT_OBJS)
+
+ALL = TCPEchoServer4
+all: $(ALL)
+
+TCPEchoServer4: $(ALL_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
