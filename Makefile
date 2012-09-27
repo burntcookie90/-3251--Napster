@@ -13,8 +13,11 @@ server : $(SERVER_FILES)
 client : $(CLIENT_FILES)
 	$(cc) $(CFLAGS) $(CLIENT_FILES) -o NapsterClient
 
+submit :
+	tar cvf Napster_proj1.tar $(SERVER_FILES) $(CLIENT_FILES) Makefile README.md napster_filelist.txt Practical.h
+	gzip Napster_proj1.tar
 clean : 
-	rm NapsterServer NapsterClient 
+	rm NapsterServer NapsterClient Napster_proj1.tar.gz
 
 #TCPServerUtility.o : TCPServerUtility.c Practical.h
 	#$(cc) $(CFLAGS) TCPServerUtility.c
