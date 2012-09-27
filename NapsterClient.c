@@ -104,7 +104,7 @@ int main(int argc, char* argv[]){
 			else if(strncmp(command, "addfile",7)==0){ //check if user wants to add a file
 				state = ADDSTATE;
 			}
-			else if(strncmp(command,"listfiles",9)==0){ 	//check for list files
+			else if(strncmp(command,"filelist",8)==0){ 	//check for list files
 				state = LISTFILESTATE;
 			}
 		}
@@ -179,11 +179,31 @@ int main(int argc, char* argv[]){
 
 			char list_size[BUFSIZE];
 			if(DEBUG) printf("[NapsterClient] receiving file list size\n");
-			ssize_t numBytesList = recv(sock,list_size,BUFSIZE,0);
-			if(DEBUG) printf("[NapsterClient] Received size: %s\n",list_size);
+			ssize_t numBytesListSize = recv(sock,list_size,BUFSIZE,0);
+			if(DEBUG) printf("[NapsterClient] Received size: %c\n",list_size[0]);
 
-			if (numBytesList < 0)
+			if (numBytesListSize < 0)
 				DieWithSystemMessage("recv() failed");
+
+			//send ack to the server for list size
+			char list_ack[1] = "2";
+			if(DEBUG) printf("[NapsterClient] sending ACK to server\n");
+			int ack_len = strlen(list_ack);
+			ssize_t numBytesAck = send(sock,list_ack,ack_len,0);
+			if(DEBUG) printf("[NapsterClient] sent ack to server\n");
+			if(numBytesAck <0)
+				DieWithSystemMessage("send() failed");
+
+			//receive list from server
+			char list_list[atoi(list_size)/sizeof(char)];
+			if(DEBUG) printf("[NapsterClient] receiving file from server\n");
+			ssize_t numBytesList = recv(sock,list_list,BUFSIZE,0);
+			if(DEBUG) printf("[NapsterClient] Received list %s\n",list_list);
+
+			if(numBytesList<0)
+				DieWithSystemMessage("recv() failed");
+
+//			for()
 			state = PROMPT_STATE;
 		}
 	}

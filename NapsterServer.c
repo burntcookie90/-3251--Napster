@@ -30,20 +30,32 @@ int main(int argc, char *argv[]) {
 		printf("filelist exists \n");
 
 		while(fscanf(fp,"%s %s",file_origin_ip,input_filename) != EOF){
-			if(DEBUG) printf("Entered while loop in echo server %s %s\n",file_origin_ip,input_filename);
+//			if(DEBUG) printf("Entered while loop in echo server %s %s\n",file_origin_ip,input_filename);
+			if(DEBUG) printf("[NapsterServer] %d: Loaded %s into array from origin %s\n",file_line,list[file_line].filename,list[file_line].origin_ip_address);
 
 			//store filename in array
-			list[file_line].filename = input_filename;
-			if(DEBUG) printf("Loaded filename %s\n",list[file_line].filename);
+//			list[file_line].filename = input_filename;
+			list[file_line].filename = malloc(sizeof(char*));
+			strcpy(list[file_line].filename,input_filename);
+//			if(DEBUG) printf("Loaded filename %d %s\n",file_line,list[file_line].filename);
 
 			//store origin ip address in array
-			list[file_line].origin_ip_address = file_origin_ip;
-			if(DEBUG) printf("Loaded ip address %s\n",list[file_line].origin_ip_address);
+//			list[file_line].origin_ip_address = file_origin_ip;
+			list[file_line].origin_ip_address = malloc(sizeof(char*));
+			strcpy(list[file_line].origin_ip_address,file_origin_ip);
+//			if(DEBUG) printf("Loaded ip address %d %s\n",file_line,list[file_line].origin_ip_address);
 
-			if(DEBUG) printf("Loaded %s into array from origin %s\n",input_filename,file_origin_ip);
+			if(DEBUG) printf("[NapsterServer] %d: Loaded %s into array from origin %s\n",file_line,list[file_line].filename,list[file_line].origin_ip_address);
 			file_line++;
 		}
 
+		if(DEBUG){
+			int i;
+			for(i = 0; i< file_line;i++){
+//				printf("[NapsterServer] %d %s %s\n",i,list[i].origin_ip_address,list[i].filename);
+				printf("[NapsterServer] %d: Loaded %s into array from origin %s\n",i,list[i].filename,list[i].origin_ip_address);
+			}
+		}
 		fclose(fp);
 		printf("closing file\n");
 	}

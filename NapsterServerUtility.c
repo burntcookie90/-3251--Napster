@@ -1,4 +1,5 @@
 #include <sys/socket.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -7,6 +8,7 @@
 
 #define DEBUG 1
 static const int MAXPENDING = 5; // Maximum outstanding connection requests
+char* state;
 
 int SetupTCPServerSocket(const char *service) {
 	// Construct the server address structure
@@ -85,6 +87,9 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 		DieWithSystemMessage("recv() failed");
 	if(DEBUG) printf("[NapsterServerUtility] Received: %s\n",buffer);
 
+	state = malloc(sizeof(char*));
+	strncpy(state,buffer,1);
+	char* idleState = "0";
 	char* addState = "1";
 	char* listState = "2";
 
@@ -94,7 +99,7 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 	// Send received string and receive again until end of stream
 	while (numBytesRcvd > 0) { // 0 indicates end of stream
 
-		if(strncmp(addState,buffer,1)==0){
+		if(strncmp(addState,state,1)==0){
 			memmove(buffer,buffer+1,strlen(buffer));
 			buffer[strlen(buffer)] = 0;
 			if(DEBUG) printf("[NapsterServerUtility] Line in %s: %d\n",filename,file_line);
@@ -129,27 +134,62 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 			if(DEBUG) printf("[NapsterServerUtility] done waiting for more data\n");
 			if (numBytesRcvd < 0)
 				DieWithSystemMessage("recv() failed");
+			state = idleState;
 		}
-		else if(strncmp(listState,buffer,1)==0){
+		else if(strncmp(listState,state,1)==0){
 			if(DEBUG) printf("[NapsterServerUtility] Listing files!\n");
 			char length[BUFSIZE];
 			int list_size = sizeof(list);
 			sprintf(length,"%d",list_size);
-			if(DEBUG) printf("[NapsterServerUtility]%d %s\n",list_size,length);
+			if(DEBUG) printf("[NapsterServerUtility] Data to Send: %d %s\n",list_size,length);
+
+			//sending file size to client
+			if(DEBUG) printf("[NapsterServerUtility] sending file size to client\n");
 			ssize_t numBytesSent = send(clntSocket,length,strlen(length),0);
+
 			if (numBytesSent < 0)
 				DieWithSystemMessage("send() failed");
 			else if (numBytesSent != numBytesRcvd)
 				DieWithUserMessage("send()", "sent unexpected number of bytes");
 
-			FILE* fp;
-			if((fp=fopen(filename,"r"))){
-				fclose(fp);
+			//recv ack
+			char ackbuffer[BUFSIZE];
+			ssize_t numBytesAck1 = recv(clntSocket,ackbuffer,BUFSIZE, 0);
+
+			if(numBytesAck1 < 0){
+				DieWithSystemMessage("recv() failed");
 			}
-			else
-				DieWithSystemMessage("[NapsterServerUtility] file cannot be opened for listing files");
+			char* file_list;
+			file_list = malloc(file_line*sizeof(char*));
+//			if(DEBUG) printf("[NapsterServerUtility] %s %s\n",list[0].origin_ip_address,list[2].filename);
+			sprintf(file_list,"%s %s\n",list[0].origin_ip_address,list[0].filename);
+			int i;
+			for(i = 1; i<file_line;i++){
+				if(DEBUG) printf("[NapsterServerUtility] %d %s %s\n",i,list[i].origin_ip_address,list[i].filename);
+				strcat(file_list,list[i].origin_ip_address);
+				strcat(file_list," ");
+				strcat(file_list,list[i].filename);
+				strcat(file_list,"\n");
+//				sprintf(file_list,"%s %s\n",list[i].origin_ip_address,list[i].filename);
+			}
+
+			if(DEBUG) printf("[NapsterServerUtility]\n%s\n",file_list);
+			if(DEBUG) printf("[NapsterServerUtility] sending file to client\n");
+			//sending file to client
+			ssize_t numBytesSentList = send(clntSocket,list,strlen(file_list),0);
+			if(numBytesSentList<0)
+				DieWithSystemMessage("send() failed");
+			if(DEBUG) printf("[NapsterServerUtility] filelist sent\n");
+			//			FILE* fp;
+			//			if((fp=fopen(filename,"r"))){
+			//				fclose(fp);
+			//			}
+			//			else
+			//				DieWithSystemMessage("[NapsterServerUtility] file cannot be opened for listing files");
+
+			state = idleState;
 		}
-//		printf("[NapsterServerUtility] Leaving HandleTCPClient()\n");
+		//		printf("[NapsterServerUtility] Leaving HandleTCPClient()\n");
 	}
 
 	//  close(clntSocket); // Close client socket
