@@ -1,2 +1,2 @@
-127.0.0.1 lol\ buckets
+127.0.0.1 lol
 138.0.0.1 notlolbuckets

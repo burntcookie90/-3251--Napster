@@ -25,4 +25,4 @@ TCPEchoClient4.o : TCPEchoClient4.c Practical.h
 AddressUtility.o : AddressUtility.c
 	$(cc) $(CFLAGS) AddressUtility.c
 clean : 
-	rm *.o EchoServer4 EchoClient4
+	rm *.o

@@ -18,7 +18,9 @@
 
 int main(int argc, char* argv[]){
 	char prompt[12] = "retspan>$: ";
+	char *filename_in;
 	int state = PROMPT_STATE;
+
 	if (argc<2 || argc >3) {
 		DieWithUserMessage("Parameter(s)", "<Server Address> [<Server Port>]");
 	}
@@ -95,10 +97,10 @@ int main(int argc, char* argv[]){
 		char *command;
 		char input[256];
 		char *arg;
-//			char *arg2;
+		//			char *arg2;
 		char *tokenPtr;
-//			char *quit;
-//			quit = "quit";
+		//			char *quit;
+		//			quit = "quit";
 		if(DEBUG) printf("\nCurrent State %d\n",state);
 		if(state == PROMPT_STATE){
 			printf("\n%s",prompt);
@@ -109,9 +111,9 @@ int main(int argc, char* argv[]){
 			command = tokenPtr;
 			tokenPtr = strtok(NULL, " ");
 			arg = tokenPtr;
-//
-//			tokenPtr = strtok(NULL, " ");
-//			arg2 = tokenPtr;
+			//
+			//			tokenPtr = strtok(NULL, " ");
+			//			arg2 = tokenPtr;
 
 			//check if user wants to quit
 			if(strncmp(command,"quit",4)==0 || strncmp(command,"exit",4) == 0){
@@ -119,7 +121,6 @@ int main(int argc, char* argv[]){
 				state = QUITSTATE;
 			}
 			else if(strncmp(command, "addfile",7)==0){ //check if user wants to add a file
-				printf("ADDING A FILE BREH");
 				state = ADDSTATE;
 			}
 		}
@@ -131,6 +132,25 @@ int main(int argc, char* argv[]){
 			if(arg != NULL){
 				if(strncmp(arg,"-d",2)==0){
 					state = DELETESTATE;
+				}
+				else{
+					filename_in = malloc(255*sizeof(char));
+					//					filename_in = arg;
+					arg[strlen(arg)-1] = 0;
+					strcpy(filename_in,arg);
+					printf("ADDING %s BREH",filename_in);
+					size_t filenameLen = strlen(filename_in); 	//Determine input length
+
+					//	Send the string to the server
+					ssize_t numBytes = send(sock, filename_in, filenameLen,0);
+
+					if (numBytes < 0) {
+						DieWithSystemMessage("send() failed");
+					}
+					else if (numBytes != filenameLen) {
+						DieWithUserMessage("send()", "sent unexpected number of bytes");
+					}
+					state=PROMPT_STATE;
 				}
 			}
 		}

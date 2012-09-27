@@ -10,18 +10,21 @@
 #define DEBUG 1
 static const int MAXPENDING = 5; // Maximum outstanding connection requests
 
-char* filename = "napster_filelist.txt";
+int file_line;
+char* filename;
 Napster_File* list;
-char file_origin_ip[FILE_ORIGIN_IP_LENGTH];
-char input_filename[FILENAME_LENGTH];
-int testint;
 
+//char* filename = "napster_filelist.txt";
 int main(int argc, char *argv[]) {
+	char file_origin_ip[FILE_ORIGIN_IP_LENGTH];
+	char input_filename[FILENAME_LENGTH];
+
+	filename = "napster_filelist.txt";
 
 	//Check if file exists, if so load it, otherwise create it.
 	FILE *fp;
 	list = malloc(ARRAY_LENGTH*sizeof(Napster_File));
-	int file_line = 0;
+	file_line = 0;
 
 	if ((fp = fopen(filename, "r"))) {
 		printf("filelist exists \n");
@@ -90,11 +93,14 @@ int main(int argc, char *argv[]) {
 		char clntName[INET_ADDRSTRLEN]; // String to contain client address
 		if (inet_ntop(AF_INET, &clntAddr.sin_addr.s_addr, clntName,
 				sizeof(clntName)) != NULL)
-			printf("[TCPEchoServer] Handling client %s/%d\n", clntName, ntohs(clntAddr.sin_port));
+			printf("[NapsterServer] Handling client %s/%d\n", clntName, ntohs(clntAddr.sin_port));
 		else
 			puts("Unable to get client address");
 
 		HandleTCPClient(clntSock);
 	}
 	// NOT REACHED
+}
+int addFile(char* ip_address, char* input_filename){
+	return 0;
 }
