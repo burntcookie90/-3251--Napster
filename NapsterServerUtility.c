@@ -106,7 +106,7 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 
 		if(strncmp(addState,state,1)==0){
 			memmove(buffer,buffer+1,strlen(buffer));
-			buffer[strlen(buffer)] = 0;
+			buffer[strlen(buffer)] = '\0';
 			if(DEBUG) printf("[NapsterServerUtility] Line in %s: %d\n",filename,file_line);
 			if(DEBUG) printf("[NapsterServerUtility] Previous file line: %s\n",list[file_line-1].filename);
 
@@ -173,9 +173,12 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 			if(DEBUG) printf("[NapsterServerUtility] waiting for more data\n");
 			numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
 			buffer[numBytesRcvd] = '\0';
-			if(DEBUG) printf("[NapsterServerUtility] done waiting for more data %s\n",buffer);
+			if(DEBUG) printf("[NapsterServerUtility] done waiting for more data received: %s numBytesRcvd  %zu\n",buffer,numBytesRcvd);
 			if (numBytesRcvd < 0)
 				DieWithSystemMessage("recv() failed");
+			state = malloc(sizeof(char*));
+			strncpy(state,buffer,1);
+			if(DEBUG) printf("[NapsterServerUtility] state after recv: %s\n",state);
 		//		printf("[NapsterServerUtility] Leaving HandleTCPClient()\n");
 		//		
 		}

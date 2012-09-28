@@ -128,8 +128,8 @@ int main(int argc, char* argv[]){
 					fputs("[NapsterClient] Received file: ",stdout); 	//Setup to print the echoed string
 
 					while(totalBytesRcvd < filenameLen){
-						char buffer[BUFSIZE]; 	//I/0 Buffer
 						/*Receive up to the buffer size ( minus 1 to leave space for a null terminator ) bytes from the sender*/
+						char buffer[BUFSIZE]; 	//I/0 Buffer
 						numBytes = recv(sock, buffer, BUFSIZE -1, 0);
 						if (numBytes < 0) {
 							DieWithSystemMessage("recv() failed");
