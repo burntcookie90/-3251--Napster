@@ -18,7 +18,7 @@ Napster_File* list;
 int main(int argc, char *argv[]) {
 	char file_origin_ip[FILE_ORIGIN_IP_LENGTH];
 	char input_filename[FILENAME_LENGTH];
-
+	int arraySize = ARRAY_LENGTH;
 	filename = "napster_filelist.txt";
 
 	//Check if file exists, if so load it, otherwise create it.
@@ -30,7 +30,26 @@ int main(int argc, char *argv[]) {
 		printf("filelist exists \n");
 
 		while(fscanf(fp,"%s %s",file_origin_ip,input_filename) != EOF){
-//			if(DEBUG) printf("Entered while loop in echo server %s %s\n",file_origin_ip,input_filename);
+		if(file_line >= (LOAD_FACTOR*arraySize)-1){
+				arraySize = arraySize*2;
+				Napster_File* new_list;
+				new_list = malloc(file_line*2*sizeof(Napster_File));
+				if(DEBUG) printf("[NapsterServerResizeArray] allocated new list\n");
+
+				int i = 0;
+				for(i = 0;i<file_line;i++){
+						new_list[i].filename = malloc(sizeof(char*));
+						strcpy(new_list[i].filename,list[i].filename);
+
+						new_list[i].origin_ip_address = malloc(sizeof(char*));
+						strcpy(new_list[i].origin_ip_address,list[i].origin_ip_address);
+						if(DEBUG) printf("[NapsterServerResizeArray] %s %s \n",new_list[i].origin_ip_address,new_list[i].filename);
+				}
+
+				list = new_list;
+				/*free(new_list);*/
+		}
+
 			if(DEBUG) printf("[NapsterServer] %d: Loaded %s into array from origin %s\n",file_line,list[file_line].filename,list[file_line].origin_ip_address);
 
 			//store filename in array
@@ -46,6 +65,7 @@ int main(int argc, char *argv[]) {
 //			if(DEBUG) printf("Loaded ip address %d %s\n",file_line,list[file_line].origin_ip_address);
 
 			if(DEBUG) printf("[NapsterServer] %d: Loaded %s into array from origin %s\n",file_line,list[file_line].filename,list[file_line].origin_ip_address);
+			
 			file_line++;
 		}
 

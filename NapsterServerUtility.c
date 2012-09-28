@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <string.h>
 #include "Practical.h"
+#include "Napster.h"
 
 #define DEBUG 1
 static const int MAXPENDING = 5; // Maximum outstanding connection requests
@@ -81,10 +82,9 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 	if(DEBUG) printf("[NapsterServerUtility] Handling TCP Client %s\n",clientIP);
 	// Receive message from client
 	ssize_t numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
-	buffer[numBytesRcvd] = '\0';
-
 	if (numBytesRcvd < 0)
 		DieWithSystemMessage("recv() failed");
+	buffer[numBytesRcvd] = '\0';
 	if(DEBUG) printf("[NapsterServerUtility] Received: %s\n",buffer);
 
 	state = malloc(sizeof(char*));
@@ -93,34 +93,10 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 	char* addState = "1";
 	char* listState = "2";
 
-
-	//ADDSTATE
-
 	// Send received string and receive again until end of stream
 	while (numBytesRcvd > 0) { // 0 indicates end of stream
-
-		if(strncmp(addState,state,1)==0){
-			memmove(buffer,buffer+1,strlen(buffer));
-			buffer[strlen(buffer)] = 0;
-			if(DEBUG) printf("[NapsterServerUtility] Line in %s: %d\n",filename,file_line);
-			if(DEBUG) printf("[NapsterServerUtility] Previous file line: %s\n",list[file_line-1].filename);
-			list[file_line].filename = buffer;	//copy the buffer into the struct
-			list[file_line].origin_ip_address = clientIP; //copy the ip address into the struct
-			if(DEBUG) printf("[NapsterServerUtility] Loaded filename %s into array\n",list[file_line].filename);
-
-			//write the data to the file
-			FILE *fp;
-			if((fp = fopen(filename,"a+"))){
-				fprintf(fp,"%s %s\n",list[file_line].origin_ip_address,list[file_line].filename);
-				printf("[NapsterServerUtility] 127.0.0.1 %s\n",list[file_line].filename);
-				file_line++;
-				fclose(fp);
-			}
-			else if(DEBUG) printf("Unable to open file!\n");
-
-			if(DEBUG) printf("[NapsterServerUtility] Echo message back to client %s\n", list[file_line-1].filename);
-
 			// Echo message back to client
+			if(DEBUG) printf("[NapsterServerUtility] echoing %s\n",buffer);
 			ssize_t numBytesSent = send(clntSocket, buffer, numBytesRcvd, 0);
 			if(DEBUG) printf("[NapsterServerUtility] Message Echoed\n");
 			if (numBytesSent < 0)
@@ -128,12 +104,22 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 			else if (numBytesSent != numBytesRcvd)
 				DieWithUserMessage("send()", "sent unexpected number of bytes");
 
-			//			// See if there is more data to receive
-			if(DEBUG) printf("[NapsterServerUtility] waiting for more data\n");
-			numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
-			if(DEBUG) printf("[NapsterServerUtility] done waiting for more data\n");
-			if (numBytesRcvd < 0)
-				DieWithSystemMessage("recv() failed");
+		if(strncmp(addState,state,1)==0){
+			memmove(buffer,buffer+1,strlen(buffer));
+			buffer[strlen(buffer)] = 0;
+			if(DEBUG) printf("[NapsterServerUtility] Line in %s: %d\n",filename,file_line);
+			if(DEBUG) printf("[NapsterServerUtility] Previous file line: %s\n",list[file_line-1].filename);
+
+
+			//write the data to the file
+			int file_add = addFile(buffer,clientIP);
+			if(!file_add){
+				DieWithSystemMessage("addFile() failed");
+			}
+
+			if(DEBUG) printf("[NapsterServerUtility] Echo message back to client %s\n", list[file_line-1].filename);
+
+
 			state = idleState;
 		}
 		else if(strncmp(listState,state,1)==0){
@@ -159,9 +145,9 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 			if(numBytesAck1 < 0){
 				DieWithSystemMessage("recv() failed");
 			}
+
 			char* file_list;
 			file_list = malloc(file_line*sizeof(char*));
-//			if(DEBUG) printf("[NapsterServerUtility] %s %s\n",list[0].origin_ip_address,list[2].filename);
 			sprintf(file_list,"%s %s\n",list[0].origin_ip_address,list[0].filename);
 			int i;
 			for(i = 1; i<file_line;i++){
@@ -170,7 +156,6 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 				strcat(file_list," ");
 				strcat(file_list,list[i].filename);
 				strcat(file_list,"\n");
-//				sprintf(file_list,"%s %s\n",list[i].origin_ip_address,list[i].filename);
 			}
 
 			if(DEBUG) printf("[NapsterServerUtility]\n%s\n",file_list);
@@ -180,17 +165,21 @@ void HandleTCPClient(int clntSocket, char* clientIP) {
 			if(numBytesSentList<0)
 				DieWithSystemMessage("send() failed");
 			if(DEBUG) printf("[NapsterServerUtility] filelist sent\n");
-			//			FILE* fp;
-			//			if((fp=fopen(filename,"r"))){
-			//				fclose(fp);
-			//			}
-			//			else
-			//				DieWithSystemMessage("[NapsterServerUtility] file cannot be opened for listing files");
 
 			state = idleState;
 		}
+		else if(state == idleState){
+		// See if there is more data to receive
+			if(DEBUG) printf("[NapsterServerUtility] waiting for more data\n");
+			numBytesRcvd = recv(clntSocket, buffer, BUFSIZE, 0);
+			buffer[numBytesRcvd] = '\0';
+			if(DEBUG) printf("[NapsterServerUtility] done waiting for more data %s\n",buffer);
+			if (numBytesRcvd < 0)
+				DieWithSystemMessage("recv() failed");
 		//		printf("[NapsterServerUtility] Leaving HandleTCPClient()\n");
+		//		
+		}
 	}
 
-	//  close(clntSocket); // Close client socket
+	  close(clntSocket); // Close client socket
 }

@@ -1,7 +1,7 @@
 cc = gcc
 CFLAGS = -std=gnu99 -pedantic -Wall -Werror
 RELEASE_FLAGS = -O2
-SERVER_FILES = AddressUtility.c DieWithMessage.c NapsterServer.c NapsterServerUtility.c
+SERVER_FILES = AddressUtility.c DieWithMessage.c NapsterServer.c NapsterServerUtility.c Napster.c
 CLIENT_FILES = NapsterClient.c DieWithMessage.c 
 
 all: client server

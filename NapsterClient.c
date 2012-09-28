@@ -17,7 +17,7 @@
 #define DELETESTATE 5
 
 int main(int argc, char* argv[]){
-	char prompt[12] = "retspan>$: ";
+	char prompt[12] = "retspan>>: ";
 	char *filename_in;
 	int state = PROMPT_STATE;
 
@@ -57,18 +57,6 @@ int main(int argc, char* argv[]){
 	if (connect(sock, (struct sockaddr *) & servAddr, sizeof(servAddr))<0) {
 		DieWithSystemMessage("connect() failed");
 	}
-
-	//		size_t echoStringLen = strlen(echoString); 	//Determine input length
-
-	//Send the string to the server
-	//		ssize_t numBytes = send(sock, echoString, echoStringLen,0);
-
-	//		if (numBytes < 0) {
-	//				DieWithSystemMessage("send() failed");
-	//		}
-	//		else if (numBytes != echoStringLen) {
-	//			DieWithUserMessage("send()", "sent unexpected number of bytes");
-	//		}
 
 	fputc('\n', stdout); 	//Print a final linefeed
 
@@ -123,7 +111,7 @@ int main(int argc, char* argv[]){
 					arg[strlen(arg)-1] = 0;
 					strcat(filename_in,"1");
 					strcat(filename_in,arg);
-					printf("ADDING %s BREH\n",filename_in);
+					printf("[NapsterClient] ADDING %s BREH\n",filename_in);
 					size_t filenameLen = strlen(filename_in); 	//Determine input length
 
 					//	Send the string to the server
@@ -135,9 +123,9 @@ int main(int argc, char* argv[]){
 					else if (numBytes != filenameLen) {
 						DieWithUserMessage("send()", "sent unexpected number of bytes");
 					}
-					//					//Receive the same string back from the server
+				/*/Receive the same string back from the server*/
 					unsigned int totalBytesRcvd = 0; //Count o total bytes received
-					fputs("Received file: ",stdout); 	//Setup to print the echoed string
+					fputs("[NapsterClient] Received file: ",stdout); 	//Setup to print the echoed string
 
 					while(totalBytesRcvd < filenameLen){
 						char buffer[BUFSIZE]; 	//I/0 Buffer
@@ -152,8 +140,17 @@ int main(int argc, char* argv[]){
 
 						totalBytesRcvd += numBytes; //Keep tally of total bytes
 						buffer[numBytes]= '\0'; 	//Terminate the string!
-						fputs(buffer,stdout); 	//Print the echo buffer
+						fputs(strcat(buffer,"\n"),stdout); 	//Print the echo buffer
 					}
+					/*send ack to the server for list size*/
+					/*char list_ack[1] = "2";*/
+					/*if(DEBUG) printf("[NapsterClient] sending ACK to server\n");*/
+					/*int ack_len = strlen(list_ack);*/
+					/*ssize_t numBytesAck = send(sock,list_ack,ack_len,0);*/
+					/*if(DEBUG) printf("[NapsterClient] sent ack to server\n");*/
+					/*if(numBytesAck <0)*/
+						/*DieWithSystemMessage("send() failed");*/
+
 					state=PROMPT_STATE;
 				}
 			}
@@ -203,7 +200,7 @@ int main(int argc, char* argv[]){
 			if(numBytesList<0)
 				DieWithSystemMessage("recv() failed");
 
-//			for()
+			//			for()
 			state = PROMPT_STATE;
 		}
 	}
